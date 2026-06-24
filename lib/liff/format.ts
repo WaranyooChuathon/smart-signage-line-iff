@@ -24,9 +24,33 @@ export function fmtNum(n: number): string {
   return n.toLocaleString("en-US");
 }
 
+const pad = (n: number) => String(n).padStart(2, "0");
+
+function bangkokParts(): { h: number; m: number } {
+  const d = new Date(Date.now() + 7 * 3600_000);
+  return { h: d.getUTCHours(), m: d.getUTCMinutes() };
+}
+
 /** Current hour of day in Bangkok (0–23). */
 export function currentBangkokHour(): number {
-  return new Date(Date.now() + 7 * 3600_000).getUTCHours();
+  return bangkokParts().h;
+}
+
+/** The most recently completed hour (0–23) in Bangkok — e.g. at 11:49 → 10. */
+export function lastCompletedHour(): number {
+  return (bangkokParts().h - 1 + 24) % 24;
+}
+
+/** Window of the last completed hour — e.g. at 11:49 → "10:00 – 11:00". */
+export function lastHourWindow(): string {
+  const h = bangkokParts().h;
+  return `${pad((h - 1 + 24) % 24)}:00 – ${pad(h)}:00`;
+}
+
+/** Last 30-minute mark in Bangkok — e.g. at 11:49 → "11:30", at 11:20 → "11:00". */
+export function lastHalfHour(): string {
+  const { h, m } = bangkokParts();
+  return `${pad(h)}:${m < 30 ? "00" : "30"}`;
 }
 
 /** "22 มิ.ย. 2569 14:05" (server local time). */
