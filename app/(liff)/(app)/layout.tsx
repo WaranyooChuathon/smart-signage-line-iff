@@ -1,10 +1,9 @@
-import { LiffSpeedDial } from "@/components/liff/liff-speed-dial";
 import { TabBar } from "@/components/liff/tab-bar";
 import { requireStore } from "@/lib/liff/require-store";
 
 // Authenticated LIFF shell: redirects to /verify when no store context.
 // Each page renders its own <LiffHeader> so date/time labels match that
-// page's data window (yesterday summary / hourly / 30-min).
+// page's data window. (The device frame + Speed Dial live in (liff)/layout.)
 export default async function LiffAppLayout({
   children,
 }: {
@@ -14,7 +13,6 @@ export default async function LiffAppLayout({
   return (
     <>
       <main className="flex flex-1 flex-col">{children}</main>
-      <LiffSpeedDial />
       <TabBar />
     </>
   );

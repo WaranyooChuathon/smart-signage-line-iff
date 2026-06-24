@@ -1,3 +1,6 @@
+"use client";
+
+import { usePathname } from "next/navigation";
 import { SpeedDial, type SpeedDialItem } from "@/components/ui/speed-dial";
 
 const ITEMS: SpeedDialItem[] = [
@@ -67,5 +70,10 @@ const ITEMS: SpeedDialItem[] = [
 ];
 
 export function LiffSpeedDial() {
-  return <SpeedDial items={ITEMS} accent="#d97706" className="bottom-20 right-5" />;
+  const pathname = usePathname();
+  // shown only inside the dashboard shell, not on the verify screen
+  if (pathname === "/verify") return null;
+  return (
+    <SpeedDial items={ITEMS} accent="#d97706" className="bottom-20 right-4" anchor="absolute" />
+  );
 }

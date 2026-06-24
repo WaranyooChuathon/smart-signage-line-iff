@@ -18,7 +18,7 @@ export function VerifyForm({
   );
 
   return (
-    <div className="flex min-h-[100dvh] flex-col justify-center gap-6 px-6 py-10">
+    <div className="flex min-h-full flex-1 flex-col justify-center gap-6 px-6 py-10">
       <div className="text-center">
         <h1 className="text-2xl font-bold tracking-tight">ยืนยันร้านค้า</h1>
         <p className="mt-1 text-sm" style={{ color: "var(--text-2)" }}>

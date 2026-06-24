@@ -17,12 +17,15 @@ export function SpeedDial({
   accent = "#f59e0b",
   className = "bottom-6 right-5",
   mainLabel = "เมนูลัด",
+  anchor = "fixed",
 }: {
   items: SpeedDialItem[];
   accent?: string;
   /** position utilities for the container (default bottom-right) */
   className?: string;
   mainLabel?: string;
+  /** "fixed" = viewport (admin) · "absolute" = nearest positioned ancestor (LIFF device frame) */
+  anchor?: "fixed" | "absolute";
 }) {
   const [open, setOpen] = useState(false);
 
@@ -63,13 +66,13 @@ export function SpeedDial({
         aria-hidden={!open}
         tabIndex={-1}
         onClick={() => setOpen(false)}
-        className={`fixed inset-0 z-40 transition-opacity duration-200 ${
+        className={`${anchor} inset-0 z-40 transition-opacity duration-200 ${
           open ? "opacity-100" : "pointer-events-none opacity-0"
         }`}
         style={{ background: "rgba(0,0,0,.05)" }}
       />
 
-      <div className={`fixed z-50 ${className}`}>
+      <div className={`${anchor} z-50 ${className}`}>
         {items.map((item, i) => {
           const { x, y } = offset(i);
           return (
