@@ -13,10 +13,18 @@ const TH_MONTHS = [
   "ธ.ค.",
 ];
 
+// Shift an instant by +7h so its UTC fields read as Bangkok wall-clock —
+// timezone-safe regardless of the server's TZ (Cloudflare Workers run in UTC).
+function toBangkok(input: string | Date): Date {
+  const base =
+    typeof input === "string" ? new Date(`${input}T00:00:00+07:00`) : input;
+  return new Date(base.getTime() + 7 * 3600_000);
+}
+
 /** "2026-06-22" | Date → "22 มิ.ย. 2569" (Buddhist era). */
 export function thaiDate(input: string | Date): string {
-  const d = typeof input === "string" ? new Date(`${input}T00:00:00+07:00`) : input;
-  return `${d.getDate()} ${TH_MONTHS[d.getMonth()]} ${d.getFullYear() + 543}`;
+  const d = toBangkok(input);
+  return `${d.getUTCDate()} ${TH_MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear() + 543}`;
 }
 
 /** Thousands separator for big numbers. */
@@ -53,10 +61,8 @@ export function lastHalfHour(): string {
   return `${pad(h)}:${m < 30 ? "00" : "30"}`;
 }
 
-/** "22 มิ.ย. 2569 14:05" (server local time). */
+/** "22 มิ.ย. 2569 14:05" (Bangkok time, tz-safe). */
 export function thaiDateTime(input: string | Date): string {
-  const d = typeof input === "string" ? new Date(input) : input;
-  const hh = String(d.getHours()).padStart(2, "0");
-  const mm = String(d.getMinutes()).padStart(2, "0");
-  return `${thaiDate(d)} ${hh}:${mm}`;
+  const d = toBangkok(typeof input === "string" ? new Date(input) : input);
+  return `${d.getUTCDate()} ${TH_MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear() + 543} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}`;
 }
