@@ -29,6 +29,13 @@ export default async function AdminAuditPage() {
             </tr>
           </thead>
           <tbody>
+            {logs.length === 0 && (
+              <tr>
+                <td colSpan={4} className="px-4 py-10 text-center text-sm text-zinc-400">
+                  ยังไม่มีบันทึก — การกระทำของผู้ดูแลจะแสดงที่นี่
+                </td>
+              </tr>
+            )}
             {logs.map((log) => (
               <tr key={log.id} className="border-b border-black/5 last:border-0">
                 <td className="whitespace-nowrap px-4 py-3 text-zinc-500">

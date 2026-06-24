@@ -1,8 +1,13 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { AdminLoginForm } from "@/components/admin/login-form";
+import { getCurrentAdmin } from "@/lib/auth/require-admin";
 import { DEMO_ADMIN } from "@/lib/mock/admins";
 
-export default function AdminLoginPage() {
+export default async function AdminLoginPage() {
+  // already signed in → skip the login form (e.g. pressing browser Back)
+  if (await getCurrentAdmin()) redirect("/admin/stores");
+
   return (
     <div className="relative flex flex-1 items-center justify-center px-6 py-12">
       <Link
