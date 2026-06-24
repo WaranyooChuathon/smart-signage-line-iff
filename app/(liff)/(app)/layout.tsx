@@ -1,3 +1,4 @@
+import { LiffSpeedDial } from "@/components/liff/liff-speed-dial";
 import { TabBar } from "@/components/liff/tab-bar";
 import { requireStore } from "@/lib/liff/require-store";
 
@@ -13,6 +14,7 @@ export default async function LiffAppLayout({
   return (
     <>
       <main className="flex flex-1 flex-col">{children}</main>
+      <LiffSpeedDial />
       <TabBar />
     </>
   );
