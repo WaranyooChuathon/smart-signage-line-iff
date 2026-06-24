@@ -50,16 +50,18 @@ async function seedStoreDate(db: DB, storeId: string, date: string) {
         lte(schema.areaReadings.ts, end),
       ),
     );
-  await db.insert(schema.areaReadings).values(
-    snap.areaReadings.map((r) => ({
-      storeId,
-      ts: r.ts,
-      areaCount: r.areaCount,
-      temp: r.temp,
-      humidity: r.humidity,
-      pressure: r.pressure,
-    })),
-  );
+  const areaRows = snap.areaReadings.map((r) => ({
+    storeId,
+    ts: r.ts,
+    areaCount: r.areaCount,
+    temp: r.temp,
+    humidity: r.humidity,
+    pressure: r.pressure,
+  }));
+  // D1 allows max 100 bound params per query; 7 cols → chunk by 12 rows (84).
+  for (let i = 0; i < areaRows.length; i += 12) {
+    await db.insert(schema.areaReadings).values(areaRows.slice(i, i + 12));
+  }
 
   // flow_daily (+ categories) — clean children explicitly (no reliance on cascade)
   const oldFlow = await db
