@@ -1,10 +1,15 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "smart-signage-liff",
+  "name": "smart-signage-line-iff",
   "main": ".open-next/worker.js",
   "compatibility_date": "2025-03-25",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "account_id": "465cb35bfb9e91b40e52de1d5dcd4cd6",
+  // Runtime mode: read from D1 (not a secret). Guarantees real mode on every
+  // deploy so audit logs persist instead of using the in-memory mock fallback.
+  "vars": {
+    "DATA_SOURCE": "real"
+  },
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"
