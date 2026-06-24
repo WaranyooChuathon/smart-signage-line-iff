@@ -1,0 +1,26 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "smart-signage-liff",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2025-03-25",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "account_id": "465cb35bfb9e91b40e52de1d5dcd4cd6",
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "d1-tutorial-line-liff-signage",
+      "database_id": "4874cb73-5d59-4b26-8bab-02dc5244279f",
+      "migrations_dir": "drizzle"
+    }
+  ],
+  "triggers": {
+    "crons": ["5 17 * * *"]
+  },
+  "observability": {
+    "enabled": true
+  }
+}

@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-outfit), var(--font-noto-thai), sans-serif;
+  --font-mono: var(--font-jetbrains), monospace;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-outfit), var(--font-noto-thai), Arial, sans-serif;
+}
+
+/* ═══ LIFF theme — design tokens lifted from PrototypeHTML ═══ */
+.liff-theme {
+  --bg: #f4f1ec;
+  --surface: #ffffff;
+  --surface-alt: #faf8f5;
+  --border: rgba(0, 0, 0, 0.06);
+  --text: #1a1a1a;
+  --text-2: #6b6560;
+  --text-3: #a8a29e;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.06), 0 2px 6px rgba(0, 0, 0, 0.04);
+  --r: 18px;
+
+  /* metric palette */
+  --district: #5b7cf7;
+  --district-light: #eef1fe;
+  --district-mid: #dde3fc;
+  --area: #22b07d;
+  --area-light: #e8f8f1;
+  --area-mid: #c8eedd;
+  --front: #f59e0b;
+  --front-light: #fef5e0;
+  --front-mid: #fde7a8;
+  --front-dark: #d97706;
+  --instore: #ef6b6b;
+  --instore-light: #fdeaea;
+  --instore-mid: #f9cdcd;
+  --total: #5b7cf7;
+  --total-light: #eef1fe;
+  --total-mid: #dde3fc;
+
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-outfit), var(--font-noto-thai), sans-serif;
+}
+
+.font-mono-num {
+  font-family: var(--font-jetbrains), monospace;
+}
+
+/* count-up / reveal helpers reused across LIFF pages */
+@keyframes liff-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+@keyframes liff-rev-up {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.liff-reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  animation: liff-rev-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}

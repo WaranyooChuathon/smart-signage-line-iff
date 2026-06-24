@@ -1,0 +1,131 @@
+import { and, eq, gte, lte } from "drizzle-orm";
+import * as schema from "@/lib/db/schema";
+import { getDb } from "@/lib/db/client";
+import type {
+  AreaReading,
+  ContentSnapshot,
+  FlowSnapshot,
+} from "@/lib/mock";
+import type { SignageDataSource, StoreVisitsStat } from "./source";
+
+function dayRange(date: string): [Date, Date] {
+  return [
+    new Date(`${date}T00:00:00+07:00`),
+    new Date(`${date}T23:59:59+07:00`),
+  ];
+}
+
+export const d1Source: SignageDataSource = {
+  async getDailySummary(storeId, date) {
+    const db = getDb();
+    const [row] = await db
+      .select()
+      .from(schema.dailyMetrics)
+      .where(
+        and(
+          eq(schema.dailyMetrics.storeId, storeId),
+          eq(schema.dailyMetrics.date, date),
+        ),
+      )
+      .limit(1);
+    if (!row) throw new Error(`No daily_metrics for ${storeId} ${date}`);
+    return {
+      district: row.district,
+      area: row.area,
+      storeVisits: row.storeVisits,
+    };
+  },
+
+  async getAreaReadings(storeId, date): Promise<AreaReading[]> {
+    const db = getDb();
+    const [start, end] = dayRange(date);
+    const rows = await db
+      .select()
+      .from(schema.areaReadings)
+      .where(
+        and(
+          eq(schema.areaReadings.storeId, storeId),
+          gte(schema.areaReadings.ts, start),
+          lte(schema.areaReadings.ts, end),
+        ),
+      );
+    return rows.map((r) => ({
+      hour: (r.ts.getUTCHours() + 7) % 24,
+      ts: r.ts,
+      areaCount: r.areaCount,
+      temp: r.temp ?? 0,
+      humidity: r.humidity ?? 0,
+      pressure: r.pressure ?? 0,
+    }));
+  },
+
+  async getStoreVisits(storeId, date): Promise<StoreVisitsStat> {
+    const { area, storeVisits } = await this.getDailySummary(storeId, date);
+    return { area, storeVisits, captureRate: area === 0 ? 0 : storeVisits / area };
+  },
+
+  async getFlow(storeId, date): Promise<FlowSnapshot> {
+    const db = getDb();
+    const [parent] = await db
+      .select()
+      .from(schema.flowDaily)
+      .where(
+        and(
+          eq(schema.flowDaily.storeId, storeId),
+          eq(schema.flowDaily.date, date),
+        ),
+      )
+      .limit(1);
+    if (!parent) throw new Error(`No flow_daily for ${storeId} ${date}`);
+    const cats = await db
+      .select()
+      .from(schema.flowCategories)
+      .where(eq(schema.flowCategories.flowDailyId, parent.id));
+    return {
+      inbound: parent.inbound,
+      internal: parent.internal,
+      outbound: parent.outbound,
+      categories: cats.map((c) => ({
+        direction: c.direction,
+        category: c.category,
+        value: c.value,
+      })),
+    };
+  },
+
+  async getContent(storeId, date): Promise<ContentSnapshot> {
+    const db = getDb();
+    const [parent] = await db
+      .select()
+      .from(schema.contentDaily)
+      .where(
+        and(
+          eq(schema.contentDaily.storeId, storeId),
+          eq(schema.contentDaily.date, date),
+        ),
+      )
+      .limit(1);
+    if (!parent) throw new Error(`No content_daily for ${storeId} ${date}`);
+    const [breakdown, ads] = await Promise.all([
+      db
+        .select()
+        .from(schema.contentBreakdown)
+        .where(eq(schema.contentBreakdown.contentDailyId, parent.id)),
+      db
+        .select()
+        .from(schema.adPlays)
+        .where(eq(schema.adPlays.contentDailyId, parent.id)),
+    ]);
+    return {
+      totalPlays: parent.totalPlays,
+      breakdown: breakdown.map((b) => ({
+        dimension: b.dimension,
+        key: b.key,
+        value: b.value,
+      })),
+      ads: ads
+        .map((a) => ({ adName: a.adName, plays: a.plays }))
+        .sort((x, y) => y.plays - x.plays),
+    };
+  },
+};
