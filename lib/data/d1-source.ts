@@ -1,12 +1,17 @@
 import { and, eq, gte, lte } from "drizzle-orm";
 import * as schema from "@/lib/db/schema";
 import { getDb } from "@/lib/db/client";
-import type {
-  AreaReading,
-  ContentSnapshot,
-  FlowSnapshot,
+import {
+  generateDaySnapshot,
+  type AreaReading,
+  type ContentSnapshot,
+  type FlowSnapshot,
 } from "@/lib/mock";
 import type { SignageDataSource, StoreVisitsStat } from "./source";
+
+// When D1 has no row for a (store, date) — e.g. the daily seed hasn't run for
+// "today" yet, or a newly created store — fall back to the deterministic
+// generator so pages always render instead of 500ing. Seeded D1 data wins.
 
 function dayRange(date: string): [Date, Date] {
   return [
@@ -28,7 +33,7 @@ export const d1Source: SignageDataSource = {
         ),
       )
       .limit(1);
-    if (!row) throw new Error(`No daily_metrics for ${storeId} ${date}`);
+    if (!row) return generateDaySnapshot(storeId, date).daily;
     return {
       district: row.district,
       area: row.area,
@@ -49,6 +54,7 @@ export const d1Source: SignageDataSource = {
           lte(schema.areaReadings.ts, end),
         ),
       );
+    if (rows.length === 0) return generateDaySnapshot(storeId, date).areaReadings;
     return rows.map((r) => ({
       hour: (r.ts.getUTCHours() + 7) % 24,
       ts: r.ts,
@@ -76,7 +82,7 @@ export const d1Source: SignageDataSource = {
         ),
       )
       .limit(1);
-    if (!parent) throw new Error(`No flow_daily for ${storeId} ${date}`);
+    if (!parent) return generateDaySnapshot(storeId, date).flow;
     const cats = await db
       .select()
       .from(schema.flowCategories)
@@ -105,7 +111,7 @@ export const d1Source: SignageDataSource = {
         ),
       )
       .limit(1);
-    if (!parent) throw new Error(`No content_daily for ${storeId} ${date}`);
+    if (!parent) return generateDaySnapshot(storeId, date).content;
     const [breakdown, ads] = await Promise.all([
       db
         .select()

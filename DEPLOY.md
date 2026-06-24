@@ -30,14 +30,23 @@ git remote add origin https://github.com/<you>/smart-signage-liff.git
 git push -u origin main
 ```
 
-## ขั้นที่ 3 — ตั้ง secret + deploy 🧑
-```bash
-wrangler secret put AUTH_SECRET           # วางค่าเดียวกับใน .env.local
-npx wrangler deploy --var DATA_SOURCE:real   # หรือเพิ่ม "vars":{"DATA_SOURCE":"real"} ใน wrangler.jsonc
-# วิธีหลัก:
-npm run deploy                            # opennextjs-cloudflare build && deploy
-```
-> ถ้าจะรันแบบ **mock** บน Workers (ไม่ใช้ D1): ข้าม secret/DATA_SOURCE ได้เลย
+## ขั้นที่ 3 — Deploy ด้วย Cloudflare Workers Builds 🧑
+> ⚠️ **อย่า `npm run deploy` จากเครื่อง Windows** — OpenNext build บน Windows สร้าง worker ที่พัง (500 ทุก route) ให้ build บน Linux ผ่าน Workers Builds แทน
+
+1. Cloudflare dashboard → **Workers & Pages** → **Create** → แท็บ **Workers** → **Connect to Git** → เลือก repo + branch `main`
+2. ตั้งค่า build:
+   - **Root directory:** `/` (ถ้า push เฉพาะ `web/` เป็น repo root) — หรือ `web` (ถ้า push ทั้งโปรเจกต์)
+   - **Build command:** `npx opennextjs-cloudflare build`  ← ต้องเป็นอันนี้ (ไม่ใช่ `npm run build`) มันรัน next build + สร้าง `.open-next/`
+   - **Deploy command:** `npx wrangler deploy` (ค่า default — wrangler ตรวจเจอ OpenNext แล้ว deploy `.open-next/` ให้เอง)
+3. กด deploy → CF build บน Linux → ได้ URL `https://smart-signage-liff.<subdomain>.workers.dev`
+   - ตอนนี้รันแบบ **mock** (ยังไม่ตั้ง DATA_SOURCE) — ทุกหน้าควรใช้งานได้ ✅ ใช้ยืนยันว่า deploy หาย 500
+
+## ขั้นที่ 3.5 — เปิดโหมด D1 จริง (ออปชัน) 🧑
+ที่ worker → **Settings → Variables and Secrets**:
+- เพิ่ม **Secret** `AUTH_SECRET` = ค่าเดียวกับ `.env.local`
+- เพิ่ม **Variable** `DATA_SOURCE` = `real`
+
+แล้ว re-deploy (push commit ใหม่ หรือกด Retry build)
 
 ## ขั้นที่ 4 — Seed ข้อมูลลง D1 🧑
 หลัง deploy แล้ว (มี URL เช่น `https://smart-signage-liff.<you>.workers.dev`):
