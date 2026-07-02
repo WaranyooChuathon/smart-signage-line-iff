@@ -8,6 +8,8 @@
 
 🔗 **Live demo:** _(เพิ่มลิงก์หลัง deploy)_ · **GitHub:** _(เพิ่มลิงก์ของคุณ)_
 
+![หน้าหลัก — Smart Signage Line-LIFF](docs/screenshots/landing.png)
+
 ---
 
 ## ปัญหา
@@ -42,11 +44,20 @@
 - **Flow** — แผนผังการเดินทางฝูงชน (React Flow) แยกตามหมวดร้าน inbound/outbound
 - **Content Count** — โฆษณาที่เล่นบ่อยสุด + สัดส่วนเพศ/อายุ (donut)
 
+พร้อม **FAB Speed Dial** (ปุ่มลอยกดแล้วบานเป็นรัศมี) นำทางทุกหน้า + กลับหน้าเริ่มต้น ·
+label วันที่/เวลาแยกตามหน้า (สรุปเมื่อวาน / รายชั่วโมง / ราย 30 นาที) เวลาไทย (Asia/Bangkok)
+
 ### 🖥️ Management (หลังบ้าน)
-- ระบบ login (email+password)
+- ระบบ login (email+password) + redirect อัตโนมัติเมื่อ login แล้ว
 - ลงทะเบียน/แก้ไข/ลบร้าน + **สร้าง access code อัตโนมัติ** + ลิงก์ LINE ID
-- **Audit log** บันทึกทุก action สำคัญ
+- **Audit log** บันทึกทุก action สำคัญ (resolve ชื่อ admin/ร้าน)
 - **Analytics** ยอดเข้าชมแต่ละหน้าใน LIFF
+- FAB Speed Dial นำทาง + กลับหน้าเริ่มต้น
+
+### 🎨 UI/UX
+- **Responsive phone-frame showcase** — มือถือเต็มจอ · tablet/desktop แสดงเป็นกรอบมือถือกลางจอบนพื้นหลังตกแต่ง + side panel
+- หน้าหลัก dot-grid + โลโก้ Tech Stack + ตัวอย่าง dashboard ในกรอบมือถือ
+- ดีไซน์ถอดจาก prototype (Outfit / JetBrains Mono / Noto Sans Thai) · count-up · reduced-motion · a11y
 
 ## Architecture
 
@@ -69,6 +80,10 @@ lib/
 → funnel มีลำดับเหตุผล, conversion สมจริง, peak hour โค้งธรรมชาติ, รีเฟรชแล้วค่าคงเดิม
 
 ## Screenshots
+
+| LIFF บน desktop (phone-frame showcase) | FAB Speed Dial |
+|---|---|
+| ![](docs/screenshots/liff-showcase.png) | ![](docs/screenshots/fab-speed-dial.png) |
 
 | Dashboard | Area Count | Store Visits |
 |---|---|---|
@@ -101,9 +116,11 @@ npm run db:generate  # สร้าง migration จาก schema
 
 ## ต่อ backend จริง (Cloudflare D1)
 
-ตั้ง `DATA_SOURCE=real` + ค่าใน `.env.local` (ดู `.env.example`) แล้ว migrate ขึ้น D1 —
-data layer จะอ่านจาก D1 แทน mock ทันที โดย UI ไม่ต้องเปลี่ยน
-Deploy บน Cloudflare Workers ด้วย `@opennextjs/cloudflare` และ seed ข้อมูลรายวันด้วย Cron Triggers
+- `DATA_SOURCE=real` ตั้งใน `wrangler.jsonc` `vars` (runtime, deterministic) — `getSource()` อ่านจาก D1 แทน mock โดย UI ไม่ต้องเปลี่ยน
+- ถ้าไม่มีข้อมูลของวัน/ร้านนั้นใน D1 → **fallback ไป generator อัตโนมัติ** (ไม่ error)
+- migrate: `npm run db:apply` (wrangler, ไม่ต้องใช้ API token)
+- seed: `POST /api/seed` (ป้องกันด้วย `AUTH_SECRET`) — สร้าง admin + ร้าน + สถิติ (insert แบบ chunk ตามลิมิต 100 params ของ D1)
+- deploy: **Cloudflare Workers Builds** (build บน Linux — OpenNext build บน Windows จะพัง) ดู [DEPLOY.md](DEPLOY.md)
 
 ## Company-safe
 
